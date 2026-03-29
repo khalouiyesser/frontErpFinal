@@ -1,278 +1,377 @@
 import React, { useState, useEffect } from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import {
-  LayoutDashboard, Users, Truck, Package, ShoppingCart, ShoppingBag,
-  Warehouse, FileText, Receipt, UserCog, Calculator, BarChart3,
-  Bell, Settings, LogOut, ChevronLeft, ChevronRight,
-  Shield, Building2, Sun, Moon, Globe, Layers, RotateCcw,
+    LayoutDashboard, Users, Truck, Package, ShoppingCart, ShoppingBag,
+    Warehouse, FileText, Receipt, UserCog, Calculator, Bell,
+    Settings, LogOut, ChevronLeft, ChevronRight,
+    Shield, Building2, Sun, Moon, Globe, Menu, X,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useTheme } from '../../context/ThemeContext';
+import { useTranslation } from 'react-i18next';
+import { setLanguage, type Lang } from '../../i18n/i18n';
+import { cn } from '../../utils';
 import { useQuery } from '@tanstack/react-query';
 import { notificationsApi } from '../../api';
-import logo from '../../assets/logo.png';
-import { Lang, useI18n } from '../../context/I18nContext';
-
-type UserRole = 'system_admin' | 'admin_company' | 'resource';
 
 const BUSINESS_NAV = [
-  { icon: LayoutDashboard, labelKey: 'nav.dashboard',  to: '/dashboard' },
-  { icon: Users,           labelKey: 'nav.clients',    to: '/clients' },
-  { icon: Truck,           labelKey: 'nav.suppliers',  to: '/suppliers' },
-  { icon: Package,         labelKey: 'nav.products',   to: '/products' },
-  { icon: ShoppingCart,    labelKey: 'nav.sales',      to: '/sales' },
-  { icon: ShoppingBag,     labelKey: 'nav.purchases',  to: '/purchases' },
-  { icon: Warehouse,       labelKey: 'nav.stock',      to: '/stock' },
-  { icon: FileText,        labelKey: 'nav.quotes',     to: '/quotes' },
-  { icon: Receipt,         labelKey: 'nav.charges',    to: '/charges' },
-  { icon: UserCog,         labelKey: 'nav.employees',  to: '/employees' },
-  { icon: Calculator,      labelKey: 'nav.accounting', to: '/accounting' },
-  // { icon: BarChart3,       labelKey: 'nav.reports',    to: '/reports' },
-  // { icon: Layers,          labelKey: 'nav.delivery',   to: '/delivery' },
-  // { icon: RotateCcw,       labelKey: 'nav.returns',    to: '/returns' },
+    { icon: LayoutDashboard, key: 'nav.dashboard',  to: '/dashboard' },
+    { icon: Users,           key: 'nav.clients',    to: '/clients' },
+    { icon: Truck,           key: 'nav.suppliers',  to: '/suppliers' },
+    { icon: Package,         key: 'nav.products',   to: '/products' },
+    { icon: ShoppingCart,    key: 'nav.sales',      to: '/sales' },
+    { icon: ShoppingBag,     key: 'nav.purchases',  to: '/purchases' },
+    { icon: Warehouse,       key: 'nav.stock',      to: '/stock' },
+    { icon: FileText,        key: 'nav.quotes',     to: '/quotes' },
+    { icon: Receipt,         key: 'nav.charges',    to: '/charges' },
+    { icon: UserCog,         key: 'nav.employees',  to: '/employees' },
+    { icon: Calculator,      key: 'nav.accounting', to: '/accounting' },
 ];
 
 const ADMIN_NAV = [
-  { icon: LayoutDashboard, labelKey: 'nav.admin.dashboard', to: '/admin/dashboard' },
-  { icon: Building2,       labelKey: 'nav.admin.companies', to: '/admin/companies' },
+    { icon: LayoutDashboard, key: 'nav.admin.dashboard',  to: '/admin/dashboard' },
+    { icon: Building2,       key: 'nav.admin.companies',  to: '/admin/companies' },
+    { icon: Users,           key: 'nav.admin.users',      to: '/admin/users' },
 ];
 
-const LANGS: { code: Lang; flag: string; label: string; native: string }[] = [
-  { code: 'fr', flag: '🇫🇷', label: 'FR', native: 'Français' },
-  { code: 'ar', flag: '🇹🇳', label: 'AR', native: 'العربية' },
-  { code: 'en', flag: '🇬🇧', label: 'EN', native: 'English' },
+const LANGS: { code: Lang; flag: string; label: string }[] = [
+    { code: 'fr', flag: '🇫🇷', label: 'FR' },
+    { code: 'ar', flag: '🇹🇳', label: 'AR' },
+    { code: 'en', flag: '🇬🇧', label: 'EN' },
 ];
 
-const isMobile        = () => window.innerWidth < 768;
-const isSystemAdmin   = (role?: string) => role === 'system_admin';
-const isCompanyAdmin  = (role?: string) => role === 'admin_company';
+const isMobile = () => window.innerWidth < 768;
 
-// ── Toggle switch interne — dimensions pixel exactes ──────────────────────────
-// Conteneur : 44×24px  |  Bouton : 18×18px
-// OFF → left: 3px  |  ON → left: 23px
-const MiniToggle: React.FC<{ on: boolean }> = ({ on }) => (
-    <div
-        style={{ width: '44px', height: '24px', flexShrink: 0 }}
-        className={`relative rounded-full transition-colors duration-300 ${on ? 'bg-indigo-500' : 'bg-gray-200 dark:bg-gray-700'}`}
-    >
-    <span
-        style={{ width: '18px', height: '18px', top: '3px', left: on ? '23px' : '3px' }}
-        className="absolute bg-white rounded-full shadow transition-all duration-300"
-    />
-    </div>
-);
-
-// ── Component ─────────────────────────────────────────────────────────────────
 const Sidebar: React.FC = () => {
-  const [collapsed, setCollapsed] = useState(() => isMobile());
+    const [collapsed, setCollapsed]   = useState(() => isMobile());
+    const [mobileOpen, setMobileOpen] = useState(false);
+    const [langOpen, setLangOpen]     = useState(false);
 
-  const { user, logout }        = useAuth();
-  const { isDark, toggleTheme } = useTheme();
-  const { t, lang, setLang }    = useI18n();
+    const { user, logout }       = useAuth();
+    const { isDark, toggleTheme } = useTheme();
+    const { t, i18n }            = useTranslation();
+    const location               = useLocation();
 
-  const navItems = isSystemAdmin(user?.role) ? ADMIN_NAV : BUSINESS_NAV;
+    const isRTL    = i18n.language === 'ar';
+    const isAdmin  = user?.role === 'system_admin';
+    const navItems = isAdmin ? ADMIN_NAV : BUSINESS_NAV;
 
-  useEffect(() => {
-    const onResize = () => { if (isMobile()) setCollapsed(true); };
-    window.addEventListener('resize', onResize);
-    return () => window.removeEventListener('resize', onResize);
-  }, []);
+    const { data: notifications } = useQuery({
+        queryKey: ['notifications'],
+        queryFn:  notificationsApi.getAll,
+        refetchInterval: 60_000,
+        enabled: !isAdmin,
+    });
 
-  const { data: unreadData } = useQuery({
-    queryKey: ['notifications-unread'],
-    queryFn:  notificationsApi.getUnreadCount,
-    refetchInterval: 30_000,
-    enabled: !isSystemAdmin(user?.role),
-  });
-  const unreadCount = unreadData?.count ?? 0;
+    const unreadCount = Array.isArray(notifications)
+        ? notifications.filter((n: any) => !n.isRead).length
+        : 0;
 
-  const currentLang = LANGS.find(l => l.code === lang) ?? LANGS[0];
+    useEffect(() => {
+        const onResize = () => {
+            if (isMobile()) { setCollapsed(true); setMobileOpen(false); }
+        };
+        window.addEventListener('resize', onResize);
+        return () => window.removeEventListener('resize', onResize);
+    }, []);
 
-  return (
-      <aside
-          className={`relative flex flex-col h-screen bg-white dark:bg-gray-950 border-r border-gray-100 dark:border-gray-800 transition-all duration-300 flex-shrink-0 ${
-              collapsed ? 'w-16' : 'w-64'
-          }`}
-      >
-        {/* ── Logo ── */}
-        <div className={`flex items-center gap-3 px-4 py-5 border-b border-gray-100 dark:border-gray-800 ${collapsed ? 'justify-center' : ''}`}>
-          <div className="w-9 h-9 flex-shrink-0">
-            <img src={logo} alt="KY-Pro" className="w-full h-full object-contain rounded-full" />
-          </div>
-          {!collapsed && (
-              <div className="min-w-0">
-                <p className="font-bold text-gray-900 dark:text-white text-sm">KY-Pro</p>
-                <p className="text-xs text-gray-400 truncate max-w-[140px]">
-                  {user?.businessName || user?.name}
-                </p>
-              </div>
-          )}
-        </div>
+    // Fermer le sidebar mobile au changement de route
+    useEffect(() => { setMobileOpen(false); }, [location.pathname]);
 
-        {/* ── Role Badge ── */}
-        {!collapsed && (
-            <div className="px-3 pt-2">
-              {isSystemAdmin(user?.role) ? (
-                  <div className="px-3 py-1.5 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg flex items-center gap-2">
-                    <Shield size={13} className="text-amber-600 dark:text-amber-400" />
-                    <span className="text-xs font-medium text-amber-700 dark:text-amber-400">System Admin</span>
-                  </div>
-              ) : isCompanyAdmin(user?.role) ? (
-                  <div className="px-3 py-1.5 bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg flex items-center gap-2">
-                    <Building2 size={13} className="text-blue-600 dark:text-blue-400" />
-                    <span className="text-xs font-medium text-blue-700 dark:text-blue-400">Admin Entreprise</span>
-                  </div>
-              ) : null}
-            </div>
-        )}
+    const handleLang = (code: Lang) => {
+        setLanguage(code);
+        setLangOpen(false);
+    };
 
-        {/* ── Navigation ── */}
-        <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">
-          {navItems.map(({ icon: Icon, labelKey, to }) => {
-            const label = t(labelKey);
-            return (
-                <NavLink
-                    key={to}
-                    to={to}
-                    title={collapsed ? label : undefined}
-                    className={({ isActive }) =>
-                        `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                            isActive
-                                ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-600 dark:text-blue-400'
-                                : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 hover:text-gray-900 dark:hover:text-white'
-                        }`
-                    }
-                >
-                  <Icon size={18} className="flex-shrink-0" />
-                  {!collapsed && <span>{label}</span>}
-                </NavLink>
-            );
-          })}
-        </nav>
+    // Tooltip : en RTL il apparaît à droite du sidebar, en LTR à gauche
+    const tooltipClass = isRTL
+        ? 'absolute right-full mr-2 px-2.5 py-1.5 bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-medium rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50'
+        : 'absolute left-full ml-2 px-2.5 py-1.5 bg-slate-800 dark:bg-slate-100 text-white dark:text-slate-900 text-xs font-medium rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50';
 
-        {/* ── Bottom ── */}
-        <div className="border-t border-gray-100 dark:border-gray-800 p-2 space-y-0.5">
+    const sidebarContent = (
+        <div className="flex flex-col h-full">
 
-          {/* Notifications */}
-          {!isSystemAdmin(user?.role) && (
-              <NavLink
-                  to="/notifications"
-                  title={collapsed ? t('nav.notifications') : undefined}
-                  className={({ isActive }) =>
-                      `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                          isActive ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-600' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900'
-                      }`
-                  }
-              >
-                <div className="relative flex-shrink-0">
-                  <Bell size={18} />
-                  {unreadCount > 0 && (
-                      <span className="absolute -top-1.5 -right-1.5 bg-red-500 text-white text-[10px] font-bold rounded-full w-4 h-4 flex items-center justify-center">
-                  {unreadCount > 9 ? '9+' : unreadCount}
-                </span>
-                  )}
+            {/* ── Logo ─────────────────────────────────────────────────────── */}
+            <div className={cn(
+                'flex items-center gap-3 px-4 py-5 border-b border-slate-100 dark:border-slate-800',
+                collapsed && !mobileOpen && 'justify-center px-2'
+            )}>
+                <div className="w-9 h-9 rounded-xl bg-primary-600 flex items-center justify-center flex-shrink-0">
+                    {/* Logo lettre — agrandi */}
+                    <span className="text-white font-black text-base">K</span>
                 </div>
-                {!collapsed && <span>{t('nav.notifications')}</span>}
-              </NavLink>
-          )}
-
-          {/* Settings */}
-          <NavLink
-              to="/settings"
-              title={collapsed ? t('nav.settings') : undefined}
-              className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ${
-                      isActive ? 'bg-blue-50 dark:bg-blue-950/60 text-blue-600' : 'text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900'
-                  }`
-              }
-          >
-            <Settings size={18} />
-            {!collapsed && <span>{t('nav.settings')}</span>}
-          </NavLink>
-
-          <div className="h-px bg-gray-100 dark:bg-gray-800 !my-2" />
-
-          {/* ── Theme Toggle ── */}
-          <button
-              onClick={toggleTheme}
-              title={collapsed ? (isDark ? 'Mode clair' : 'Mode sombre') : undefined}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 transition-all group"
-          >
-            <div className="flex-shrink-0">
-              {isDark
-                  ? <Sun  size={18} className="text-amber-400 group-hover:rotate-12 transition-transform" />
-                  : <Moon size={18} className="text-indigo-500 group-hover:-rotate-12 transition-transform" />
-              }
-            </div>
-            {!collapsed && (
-                <div className="flex items-center justify-between flex-1">
-                  <span>{isDark ? 'Mode clair' : 'Mode sombre'}</span>
-                  {/* ✅ Toggle corrigé — dimensions pixel exactes */}
-                  <MiniToggle on={isDark} />
-                </div>
-            )}
-          </button>
-
-          {/* ── Language Selector ── */}
-          <div className="relative">
-            {collapsed ? (
-                <button
-                    onClick={() => {
-                      const idx  = LANGS.findIndex(l => l.code === lang);
-                      const next = LANGS[(idx + 1) % LANGS.length];
-                      setLang(next.code);
-                    }}
-                    title={`${currentLang.flag} ${currentLang.label}`}
-                    className="w-full flex items-center justify-center px-3 py-2.5 rounded-xl text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-900 transition-all"
-                >
-                  <span className="text-base leading-none">{currentLang.flag}</span>
-                </button>
-            ) : (
-                <div className="px-3 py-2">
-                  <div className="flex items-center gap-1">
-                    <Globe size={13} className="text-gray-400 flex-shrink-0" />
-                    <div className="flex gap-1 flex-1 justify-end">
-                      {LANGS.map(l => (
-                          <button
-                              key={l.code}
-                              onClick={() => setLang(l.code)}
-                              className={`px-2 py-0.5 rounded-lg text-xs font-medium transition-colors ${
-                                  lang === l.code
-                                      ? 'bg-blue-600 text-white'
-                                      : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
-                              }`}
-                          >
-                            {l.flag} {l.label}
-                          </button>
-                      ))}
+                {(!collapsed || mobileOpen) && (
+                    <div className="min-w-0">
+                        {/* App name — agrandi de text-sm à text-base */}
+                        <p className="font-black text-slate-900 dark:text-white text-base leading-tight">
+                            KyPro ERP
+                        </p>
+                        {/* Business name — agrandi de text-[10px] à text-xs */}
+                        <p className="text-xs text-slate-400 truncate mt-0.5">
+                            {user?.businessName || 'Workspace'}
+                        </p>
                     </div>
-                  </div>
+                )}
+            </div>
+
+            {/* ── Nav ──────────────────────────────────────────────────────── */}
+            <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">
+                {navItems.map(({ icon: Icon, key, to }) => (
+                    <NavLink
+                        key={to}
+                        to={to}
+                        className={({ isActive }) => cn(
+                            // text-sm → text-[0.9rem] — légèrement plus grand, lisible
+                            'flex items-center gap-3 px-3 py-2.5 rounded-xl text-[0.9rem] font-semibold transition-all duration-150 group relative',
+                            isActive
+                                ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400'
+                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100',
+                            collapsed && !mobileOpen && 'justify-center px-2'
+                        )}
+                    >
+                        {/* Icônes agrandies de 18 → 20 */}
+                        <Icon size={20} className="flex-shrink-0" />
+                        {(!collapsed || mobileOpen) && (
+                            <span className="truncate">{t(key)}</span>
+                        )}
+                        {collapsed && !mobileOpen && (
+                            <div className={tooltipClass}>
+                                {t(key)}
+                            </div>
+                        )}
+                    </NavLink>
+                ))}
+
+                {/* Notifications */}
+                {!isAdmin && (
+                    <NavLink
+                        to="/notifications"
+                        className={({ isActive }) => cn(
+                            'flex items-center gap-3 px-3 py-2.5 rounded-xl text-[0.9rem] font-semibold transition-all duration-150 relative',
+                            isActive
+                                ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400'
+                                : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100',
+                            collapsed && !mobileOpen && 'justify-center px-2'
+                        )}
+                    >
+                        <div className="relative flex-shrink-0">
+                            <Bell size={20} />
+                            {unreadCount > 0 && (
+                                <span className="absolute -top-1.5 -right-1.5 w-4.5 h-4.5 min-w-[18px] min-h-[18px] bg-red-500 text-white text-[10px] rounded-full flex items-center justify-center font-bold px-0.5">
+                                    {unreadCount > 9 ? '9+' : unreadCount}
+                                </span>
+                            )}
+                        </div>
+                        {(!collapsed || mobileOpen) && (
+                            <span>{t('nav.notifications')}</span>
+                        )}
+                    </NavLink>
+                )}
+            </nav>
+
+            {/* ── Bottom controls ───────────────────────────────────────────── */}
+            <div className="border-t border-slate-100 dark:border-slate-800 p-3 space-y-0.5">
+
+                {/* Theme toggle */}
+                <button
+                    onClick={toggleTheme}
+                    className={cn(
+                        'flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-[0.9rem] font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 transition-colors',
+                        collapsed && !mobileOpen && 'justify-center px-2'
+                    )}
+                >
+                    {isDark ? <Sun size={20} /> : <Moon size={20} />}
+                    {(!collapsed || mobileOpen) && (
+                        <span>{isDark ? t('settings.light') : t('settings.dark')}</span>
+                    )}
+                </button>
+
+                {/* Language picker */}
+                <div className="relative">
+                    <button
+                        onClick={() => setLangOpen(p => !p)}
+                        className={cn(
+                            'flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-[0.9rem] font-semibold text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100 transition-colors',
+                            collapsed && !mobileOpen && 'justify-center px-2'
+                        )}
+                    >
+                        <Globe size={20} />
+                        {(!collapsed || mobileOpen) && (
+                            <span>
+                                {LANGS.find(l => l.code === i18n.language)?.flag}{' '}
+                                {i18n.language.toUpperCase()}
+                            </span>
+                        )}
+                    </button>
+
+                    {langOpen && (
+                        <div className={cn(
+                            'absolute bottom-full mb-1 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-xl shadow-lg p-1 z-50',
+                            collapsed && !mobileOpen
+                                ? isRTL ? 'right-full mr-2' : 'left-full ml-2'
+                                : 'left-0 right-0'
+                        )}>
+                            {LANGS.map(l => (
+                                <button
+                                    key={l.code}
+                                    onClick={() => handleLang(l.code)}
+                                    className={cn(
+                                        // text-sm → text-[0.9rem]
+                                        'flex items-center gap-2.5 w-full px-3 py-2.5 rounded-lg text-[0.9rem] font-semibold transition-colors',
+                                        i18n.language === l.code
+                                            ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400'
+                                            : 'text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700'
+                                    )}
+                                >
+                                    <span className="text-base">{l.flag}</span>
+                                    <span>{l.label}</span>
+                                </button>
+                            ))}
+                        </div>
+                    )}
+                </div>
+
+                {/* Settings */}
+                <NavLink
+                    to="/settings"
+                    className={({ isActive }) => cn(
+                        'flex items-center gap-3 px-3 py-2.5 rounded-xl text-[0.9rem] font-semibold transition-colors',
+                        isActive
+                            ? 'bg-primary-50 dark:bg-primary-900/20 text-primary-700 dark:text-primary-400'
+                            : 'text-slate-600 dark:text-slate-400 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-slate-100',
+                        collapsed && !mobileOpen && 'justify-center px-2'
+                    )}
+                >
+                    <Settings size={20} />
+                    {(!collapsed || mobileOpen) && <span>{t('settings.title')}</span>}
+                </NavLink>
+
+                {/* Divider */}
+                <div className="h-px bg-slate-100 dark:bg-slate-800 mx-1 my-1" />
+
+                {/* User + Logout */}
+                <div className={cn(
+                    'flex items-center gap-3 px-3 py-2.5 rounded-xl',
+                    collapsed && !mobileOpen && 'justify-center'
+                )}>
+                    {/* Avatar — légèrement agrandi */}
+                    <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center flex-shrink-0 shadow-sm">
+                        <span className="text-white text-sm font-bold">
+                            {user?.name?.[0]?.toUpperCase() || 'U'}
+                        </span>
+                    </div>
+
+                    {(!collapsed || mobileOpen) && (
+                        <div className="flex-1 min-w-0">
+                            {/* Nom — agrandi de text-xs à text-sm */}
+                            <p className="text-sm font-bold text-slate-800 dark:text-slate-200 truncate leading-tight">
+                                {user?.name}
+                            </p>
+                            {/* Email — agrandi de text-[10px] à text-xs */}
+                            <p className="text-xs text-slate-400 truncate mt-0.5">
+                                {user?.email}
+                            </p>
+                        </div>
+                    )}
+
+                    {(!collapsed || mobileOpen) && (
+                        <button
+                            onClick={logout}
+                            title={t('nav.logout')}
+                            className="p-2 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors flex-shrink-0"
+                        >
+                            <LogOut size={17} />
+                        </button>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+
+    // Bouton collapse : en RTL les chevrons sont inversés
+    const CollapseIcon = isRTL
+        ? (collapsed ? ChevronLeft  : ChevronRight)
+        : (collapsed ? ChevronRight : ChevronLeft);
+
+    const collapseButtonClass = isRTL
+        ? 'absolute -left-3 top-20 w-6 h-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-full flex items-center justify-center shadow-sm text-slate-500 hover:text-primary-600 transition-colors'
+        : 'absolute -right-3 top-20 w-6 h-6 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-full flex items-center justify-center shadow-sm text-slate-500 hover:text-primary-600 transition-colors';
+
+    // Bouton hamburger : en RTL positionné à droite
+    const hamburgerClass = isRTL
+        ? 'fixed top-4 right-4 z-40 md:hidden bg-white dark:bg-slate-900 p-2.5 rounded-xl shadow-card border border-slate-100 dark:border-slate-800'
+        : 'fixed top-4 left-4 z-40 md:hidden bg-white dark:bg-slate-900 p-2.5 rounded-xl shadow-card border border-slate-100 dark:border-slate-800';
+
+    // Position du sidebar desktop
+    const desktopSidebarClass = cn(
+        'hidden md:flex flex-col fixed inset-y-0 z-30 bg-white dark:bg-slate-950 border-slate-100 dark:border-slate-800 transition-all duration-300',
+        isRTL ? 'right-0 border-l' : 'left-0 border-r',
+        collapsed ? 'w-[72px]' : 'w-64'
+    );
+
+    // Position du sidebar mobile
+    const mobileSidebarClass = cn(
+        'fixed inset-y-0 z-50 w-72 bg-white dark:bg-slate-950 border-slate-100 dark:border-slate-800 transition-transform duration-300 md:hidden',
+        isRTL ? 'right-0 border-l' : 'left-0 border-r',
+        mobileOpen
+            ? 'translate-x-0'
+            : isRTL ? 'translate-x-full' : '-translate-x-full'
+    );
+
+    return (
+        <>
+            {/* Bouton hamburger mobile */}
+            <button
+                onClick={() => setMobileOpen(true)}
+                className={hamburgerClass}
+                aria-label={t('common.open') || 'Open menu'}
+            >
+                <Menu size={20} className="text-slate-700 dark:text-slate-300" />
+            </button>
+
+            {/* Overlay mobile */}
+            {mobileOpen && (
+                <div
+                    className="fixed inset-0 z-40 md:hidden"
+                    onClick={() => setMobileOpen(false)}
+                >
+                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" />
                 </div>
             )}
-          </div>
 
-          <div className="h-px bg-gray-100 dark:bg-gray-800 !my-2" />
+            {/* Sidebar mobile */}
+            <aside className={mobileSidebarClass}>
+                <button
+                    onClick={() => setMobileOpen(false)}
+                    className={cn(
+                        'absolute top-4 p-2 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors',
+                        isRTL ? 'left-4' : 'right-4'
+                    )}
+                    aria-label={t('common.close')}
+                >
+                    <X size={18} />
+                </button>
+                {sidebarContent}
+            </aside>
 
-          {/* Logout */}
-          <button
-              onClick={logout}
-              title={collapsed ? t('nav.logout') : undefined}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-950/30 transition-all"
-          >
-            <LogOut size={18} className="flex-shrink-0" />
-            {!collapsed && <span>{t('nav.logout')}</span>}
-          </button>
-        </div>
+            {/* Sidebar desktop */}
+            <aside className={desktopSidebarClass}>
+                {sidebarContent}
 
-        {/* ── Collapse button ── */}
-        <button
-            onClick={() => setCollapsed(p => !p)}
-            className="absolute -right-3 top-20 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-full w-6 h-6 flex items-center justify-center shadow-sm hover:shadow-md transition-shadow z-10"
-        >
-          {collapsed ? <ChevronRight size={12} /> : <ChevronLeft size={12} />}
-        </button>
-      </aside>
-  );
+                {/* Bouton collapse */}
+                <button
+                    onClick={() => setCollapsed(p => {
+                        const next = !p;
+                        window.dispatchEvent(new CustomEvent('sidebar-toggle', { detail: { collapsed: next } }));
+                        return next;
+                    })}
+                    className={collapseButtonClass}
+                >
+                    <CollapseIcon size={12} />
+                </button>
+            </aside>
+        </>
+    );
 };
 
 export default Sidebar;
