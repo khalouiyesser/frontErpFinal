@@ -1,9 +1,9 @@
 import React, { useState, useMemo, useCallback } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { clientsApi, productsApi, VentesApi } from '../../api';
+import { clientsApi, productsApi, VentesApi } from '@/api';
 import DataTable from '../../components/common/DataTable';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
-import { useConfirmDialog } from '../../hooks/useConfirmDialog';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog.ts';
 import { useTranslation } from 'react-i18next';
 import {
   Plus, Trash2, CreditCard, X, Download, Eye,
@@ -569,7 +569,7 @@ const SalesPage: React.FC = () => {
                 <div className="px-5 sm:px-6 pt-3 sm:pt-5 pb-4 border-b border-gray-100 dark:border-gray-800 shrink-0 flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-9 h-9 rounded-xl bg-blue-600 flex items-center justify-center shadow-sm shadow-blue-500/30">
-                      <TrendingUp size={16} className="text-white" />
+                      <Receipt size={16} className="text-white" />
                     </div>
                     <div>
                       <h2 className="text-base font-bold text-gray-900 dark:text-white">{t('sales.new')}</h2>

@@ -28,6 +28,7 @@
     "delete": "حذف",
     "edit": "تعديل",
     "create": "إنشاء",
+    "type": "النوع",
     "search": "بحث...",
     "loading": "جاري التحميل...",
     "noData": "لا توجد بيانات",
@@ -78,6 +79,12 @@
     "currency": "دينار",
     "tnd": "د.ت",
     "open": "فتح"
+  },
+  "payment": {
+    "cash": "نقداً",
+    "virement": "تحويل بنكي",
+    "cheque": "شيك",
+    "online": "دفع إلكتروني"
   },
   "auth": {
     "login": "تسجيل الدخول",
@@ -192,12 +199,22 @@
     "new": "بيع جديد",
     "invoice": "فاتورة",
     "client": "العميل",
+    "newClient": "عميل جديد",
     "products": "المنتجات",
+    "addProduct": "إضافة منتج",
+    "quantity": "الكمية",
+    "unitPrice": "سعر الوحدة",
+    "initialPayment": "دفعة أولى (د.ت)",
     "totalHT": "الإجمالي (بدون ض)",
     "totalTTC": "الإجمالي (بالض)",
     "amountPaid": "المدفوع",
     "amountRemaining": "المتبقي",
-    "status": { "paid": "مدفوع", "partial": "جزئي", "pending": "معلّق" },
+    "remaining": "المتبقي",
+    "status": {
+      "paid": "مدفوع",
+      "partial": "جزئي",
+      "pending": "معلّق"
+    },
     "addPayment": "إضافة دفعة",
     "paymentMethod": "طريقة الدفع",
     "notes": "ملاحظات",
@@ -269,8 +286,8 @@
     "deleteIrreversible": "سيتم حذف جميع البيانات (المشتريات، المدفوعات، السجل) بشكل نهائي.",
     "noResults": "لا توجد نتائج",
     "noResultsDesc": "لا يوجد عميل يطابق معايير البحث. حاول تغيير الفلاتر.",
-    "noClients": "لا يوجد عملاء",
-    "noClientsDesc": "ابدأ بإضافة أول عميل.",
+    "noClients": "لا توجد عناصر",
+    "noClientsDesc": "ابدأ بإضافة عنصر جديد.",
     "addFirst": "إضافة عميل",
     "refresh": "تحديث",
     "tableView": "عرض جدول",
@@ -316,7 +333,8 @@
     "minStock": "الحد الأدنى",
     "tva": "الضريبة",
     "unit": "الوحدة",
-    "lowStock": "مخزون منخفض"
+    "lowStock": "مخزون منخفض",
+    "outOfStock": "نفد المخزون"
   },
   "stock": {
     "title": "المخزون",
@@ -327,8 +345,20 @@
     "quantity": "الكمية",
     "reason": "السبب",
     "alerts": "تنبيهات المخزون",
-    "currentStock": "المخزون الحالي",
-    "threshold": "الحد الأدنى"
+    "currentStock": "مخزون عادي",
+    "threshold": "الحد الأدنى",
+    "normal": "عادي",
+    "before": "قبل",
+    "after": "بعد",
+    "source": "المصدر",
+    "stockProducts": "منتجات المخزون",
+    "productsLowStock": "منتجات بمخزون منخفض",
+    "quantityHint": "الكمية (+ دخول / - خروج)",
+    "quantityPlaceholder": "مثال: 10 أو -2",
+    "thresholdHint": "يتم تنبيه عند وصول المخزون لهذا الحد",
+    "thresholdSaved": "تم تحديث الحد",
+    "editThreshold": "تعديل الحد",
+    "adjustment": "تعديل"
   },
   "quotes": {
     "title": "عروض الأسعار",
@@ -348,10 +378,16 @@
   "charges": {
     "title": "المصاريف",
     "new": "مصروف جديد",
-    "type": "النوع",
     "amount": "المبلغ",
-    "description": "الوصف",
     "category": "الفئة",
+    "currency": "العملة",
+    "searchPlaceholder": "ابحث عن مصروف...",
+    "descriptionPlaceholder": "أدخل وصفًا...",
+    "referencePlaceholder": "أدخل مرجعًا...",
+    "notesPlaceholder": "أضف ملاحظة...",
+    "notDevis": "لا توجد عملة",
+    "devisHint": "اختر العملة",
+    "billingLines": "بنود الفاتورة",
     "analyzeAI": "تحليل بالذكاء الاصطناعي",
     "types": {
       "rent": "الإيجار",
@@ -361,6 +397,57 @@
       "transport": "النقل",
       "marketing": "التسويق",
       "other": "أخرى"
+    },
+    "count": "مصروف(ات)",
+    "created": "تم إنشاء المصروف",
+    "updated": "تم تعديل المصروف",
+    "deleted": "تم حذف المصروف",
+    "empty": "لا توجد مصاريف",
+    "deleteTitle": "حذف",
+    "deleteMsg": "حذف",
+    "deleteDanger": "إجراء لا يمكن التراجع عنه",
+    "deleteConfirm": "تأكيد الحذف",
+    "description": "الوصف",
+    "amountHT": "المبلغ دون ضريبة",
+    "amountTTC": "المبلغ شامل الضريبة",
+    "tva": "ضريبة القيمة المضافة",
+    "reference": "المرجع / المصدر",
+    "receipt": "إثبات",
+    "newTitle": "مصروف جديد",
+    "editTitle": "تعديل المصروف",
+    "addCharge": "إضافة",
+    "modeManual": "يدوي",
+    "modeOcr": "استخراج بالذكاء الاصطناعي",
+    "ocrHint": "قم برفع فاتورة لاستخراج البيانات تلقائياً",
+    "ocrSuccess": "تم استخراج البيانات بنجاح",
+    "ocrFailed": "فشل في استخراج البيانات",
+    "ocrRunning": "جاري التحليل...",
+    "extractWithOcr": "استخراج باستخدام الذكاء الاصطناعي",
+    "enterUrl": "أدخل رابط",
+    "uploadFirst": "قم برفع ملف أولاً",
+    "uploadFile": "ملف",
+    "imageUrl": "رابط الصورة",
+    "dropHere": "اسحب الملف هنا",
+    "dropOrClick": "اسحب أو انقر",
+    "orUrl": "أو رابط:",
+    "orFillManually": "أو أدخل يدوياً",
+    "invalidFile": "صيغة غير صالحة",
+    "fileTooLarge": "الملف كبير جداً",
+    "createdBy": "تم الإنشاء بواسطة",
+    "createdAt": "تاريخ الإنشاء",
+    "type": {
+      "rent": "إيجار",
+      "salary": "رواتب",
+      "utilities": "مرافق",
+      "equipment": "معدات",
+      "marketing": "تسويق",
+      "tax": "ضرائب",
+      "insurance": "تأمين",
+      "accounting": "محاسبة",
+      "fuel": "وقود",
+      "other": "أخرى",
+      "maintenance": "صيانة",
+      "transport": "نقل"
     }
   },
   "employees": {
@@ -371,7 +458,109 @@
     "salary": "الراتب",
     "startDate": "تاريخ التوظيف",
     "department": "القسم",
-    "totalSalary": "كتلة الرواتب"
+    "totalSalary": "كتلة الرواتب",
+    "employeeCount": "عدد الموظفين",
+    "title": "الموظفون",
+    "count": "موظف",
+    "activeCount": "نشط",
+    "new": "جديد",
+    "create": "إنشاء",
+    "created": "تم إنشاء الموظف",
+    "updated": "تم تعديل الموظف",
+    "deleted": "تم حذف الموظف",
+
+    "empty": "لا يوجد موظفون",
+    "emptyDesc": "ابدأ بإضافة أول موظف",
+    "addFirst": "إضافة أول موظف",
+
+    "searchPlaceholder": "ابحث عن موظف...",
+
+    "deleteTitle": "حذف الموظف",
+    "deleteMsg": "هل أنت متأكد من حذف هذا الموظف؟",
+
+    "active": "نشط",
+    "inactive": "غير نشط",
+    "activeHint": "الموظف نشط",
+    "inactiveHint": "الموظف غير نشط",
+
+    "newTitle": "موظف جديد",
+    "editTitle": "تعديل الموظف",
+    "autoAccountHint": "يمكن إنشاء حساب تلقائياً",
+
+    "stats": {
+      "active": "نشط",
+      "salary": "الرواتب",
+      "month": "شهر",
+      "cdi": "عقود دائمة",
+      "contracts": "عقود",
+      "depts": "الأقسام",
+      "distinct": "مختلفة"
+    },
+
+    "col": {
+      "employee": "الموظف",
+      "contact": "الاتصال",
+      "contract": "العقد",
+      "salary": "الراتب",
+      "hired": "تاريخ التوظيف"
+    },
+
+    "section": {
+      "identity": "الهوية",
+      "position": "الوظيفة"
+    },
+
+    "field": {
+      "firstName": "الاسم",
+      "lastName": "اللقب",
+      "phone": "الهاتف",
+      "email": "البريد الإلكتروني",
+      "cin": "رقم الهوية",
+      "cnss": "الضمان الاجتماعي",
+      "position": "الوظيفة",
+      "department": "القسم",
+      "contractType": "نوع العقد",
+      "salary": "الراتب",
+      "hireDate": "تاريخ التوظيف",
+      "rib": "الحساب البنكي"
+    },
+
+    "placeholder": {
+      "firstName": "أدخل الاسم",
+      "lastName": "أدخل اللقب",
+      "email": "أدخل البريد الإلكتروني",
+      "position": "أدخل الوظيفة",
+      "department": "أدخل القسم",
+      "notes": "أضف ملاحظة..."
+    }
+  },
+
+  "common": {
+    "active": "نشط",
+    "inactive": "غير نشط",
+    "edit": "تعديل",
+    "delete": "حذف",
+    "cancel": "إلغاء",
+    "saving": "جارٍ الحفظ...",
+    "refresh": "تحديث",
+    "status": "الحالة",
+    "notes": "ملاحظات",
+    "of": "من",
+    "all": "الكل",
+    "action_irreversible": "إجراء لا يمكن التراجع عنه",
+    "noResults": "لا توجد نتائج",
+    "noResultsDesc": "لا توجد عناصر مطابقة للبحث"
+  },
+
+  "clients": {
+    "perPage": "لكل صفحة",
+    "filtersActive": "فلاتر مفعّلة",
+    "clearAll": "مسح الكل"
+  },
+
+  "error": {
+    "generic": "حدث خطأ"
+  }
   },
   "admin": {
     "title": "الإدارة",
@@ -389,6 +578,7 @@
     "active": "نشط",
     "expired": "منتهي",
     "suspended": "موقوف",
+
     "addCompany": "إضافة شركة",
     "plans": { "basic": "أساسي", "professional": "احترافي", "enterprise": "مؤسسي" },
     "payment": {

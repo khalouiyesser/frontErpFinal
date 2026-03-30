@@ -69,6 +69,11 @@
     "none": "Aucun",
     "success": "Succès",
     "error": "Erreur",
+    "pdf": "PDF",
+    "zoomIn": "Zoom",
+    "zoomOut": "Dézoomer",
+    "downloadStarted": "Téléchargement lancé",
+    "downloadFailedOpenTab": "Téléchargement direct impossible — ouverture dans un nouvel onglet",
     "warning": "Attention",
     "info": "Information",
     "confirm_delete": "Êtes-vous sûr de vouloir supprimer cet élément ?",
@@ -77,7 +82,14 @@
     "deleting": "Suppression...",
     "currency": "TND",
     "tnd": "TND",
-    "open": "Ouvrir"
+    "open": "Ouvrir",
+    "type": "Type"
+  },
+  "payment": {
+    "cash": "Espèces",
+    "virement": "Virement bancaire",
+    "cheque": "Chèque",
+    "online": "Paiement en ligne"
   },
   "auth": {
     "login": "Connexion",
@@ -192,13 +204,23 @@
     "new": "Nouvelle vente",
     "invoice": "Facture",
     "client": "Client",
+    "newClient": "Nouveau client",
     "products": "Produits",
+    "addProduct": "Ajouter un article",
+    "quantity": "Qté",
+    "unitPrice": "Prix unitaire",
+    "initialPayment": "Acompte (TND)",
     "totalHT": "Total HT",
     "totalTTC": "Total TTC",
     "amountPaid": "Payé",
-    "amountRemaining": "Reste",
-    "status": { "paid": "Payé", "partial": "Partiel", "pending": "En attente" },
-    "addPayment": "Ajouter paiement",
+    "amountRemaining": "Reste dû",
+    "remaining": "Reste dû",
+    "status": {
+      "paid": "Payé",
+      "partial": "Partiel",
+      "pending": "En attente"
+    },
+    "addPayment": "Ajouter un paiement",
     "paymentMethod": "Mode de paiement",
     "notes": "Notes",
     "pending": "En attente",
@@ -269,8 +291,8 @@
     "deleteIrreversible": "Toutes les données (achats, paiements, historique) seront supprimées DÉFINITIVEMENT.",
     "noResults": "Aucun résultat",
     "noResultsDesc": "Aucun client ne correspond à vos critères de recherche. Essayez de modifier vos filtres.",
-    "noClients": "Aucun client",
-    "noClientsDesc": "Commencez par ajouter votre premier client.",
+    "noClients": "Aucun élément",
+    "noClientsDesc": "Commencez par en ajouter un.",
     "addFirst": "Ajouter un client",
     "refresh": "Actualiser",
     "tableView": "Vue tableau",
@@ -316,7 +338,9 @@
     "minStock": "Stock minimum",
     "tva": "TVA",
     "unit": "Unité",
-    "lowStock": "Stock faible"
+    "lowStock": "Stock faible",
+    "outOfStock": "Rupture",
+    "salePrice":  "Prix de vente"
   },
   "stock": {
     "title": "Stock",
@@ -327,8 +351,20 @@
     "quantity": "Quantité",
     "reason": "Motif",
     "alerts": "Alertes stock",
-    "currentStock": "Stock actuel",
-    "threshold": "Seuil minimum"
+    "currentStock": "Stock normal",
+    "threshold": "Seuil minimum",
+    "normal": "Normal",
+    "before": "Avant",
+    "after": "Après",
+    "source": "Source",
+    "stockProducts": "Produits en stock",
+    "productsLowStock": "produits en stock faible",
+    "quantityHint": "Quantité (+ entrée / - sortie)",
+    "quantityPlaceholder": "ex: 10 ou -2",
+    "thresholdHint": "Alerte déclenchée quand le stock atteint ce seuil",
+    "thresholdSaved": "Seuil mis à jour",
+    "editThreshold": "Modifier le seuil",
+    "adjustment": "Ajustement"
   },
   "quotes": {
     "title": "Devis",
@@ -348,9 +384,9 @@
   "charges": {
     "title": "Charges",
     "new": "Nouvelle charge",
-    "type": "Type",
     "amount": "Montant",
-    "description": "Description",
+    "currency": "Devise",
+    "billingLines": "Lignes de facturation",
     "category": "Catégorie",
     "analyzeAI": "Analyser avec l'IA",
     "types": {
@@ -361,8 +397,88 @@
       "transport": "Transport",
       "marketing": "Marketing",
       "other": "Autre"
-    }
+    },
+      "count": "charge(s)",
+      "created": "Charge créée",
+      "updated": "Charge modifiée",
+      "deleted": "Charge supprimée",
+      "empty": "Aucune charge",
+      "deleteTitle": "Supprimer",
+      "deleteMsg": "Supprimer",
+      "deleteDanger": "Action irréversible",
+      "deleteConfirm": "Supprimer",
+      "description": "Description",
+      "amountHT": "Montant HT",
+      "amountTTC": "Montant TTC",
+      "tva": "TVA",
+      "reference": "Référence / Source",
+      "receipt": "Justificatif",
+      "newTitle": "Nouvelle charge",
+      "editTitle": "Modifier la charge",
+      "addCharge": "Ajouter",
+      "modeManual": "Manuel",
+      "modeOcr": "Extraction IA",
+      "ocrHint": "Importez une facture pour extraire les données automatiquement",
+      "ocrSuccess": "Données extraites avec succès",
+      "ocrFailed": "Extraction échouée",
+      "ocrRunning": "Analyse en cours...",
+      "extractWithOcr": "Extraire avec l'IA",
+      "enterUrl": "Entrez une URL",
+      "uploadFirst": "Uploadez d'abord un fichier",
+      "uploadFile": "Fichier",
+      "imageUrl": "URL image",
+      "dropHere": "Glisser-déposer ici",
+      "dropOrClick": "Glisser ou cliquer",
+      "orUrl": "Ou URL :",
+      "orFillManually": "ou saisir manuellement",
+      "invalidFile": "Format invalide",
+      "fileTooLarge": "Fichier trop volumineux",
+      "createdBy": "Créé par",
+      "createdAt": "Créé le",
+      "type": {
+        "rent": "Loyer", "salary": "Salaires", "utilities": "Utilities",
+        "equipment": "Équipement", "marketing": "Marketing", "tax": "Impôts",
+        "insurance": "Assurance", "accounting": "Comptabilité",
+        "fuel": "Carburant", "other": "Autre", "maintenance": "Maintenance",
+        "transport": "Transport"
+      },
+    "items": {
+      "title": "Lignes de facturation",
+      "detail": "Détail des lignes",
+      "add": "Ajouter une ligne",
+      "clickToAdd": "Cliquer pour ajouter des lignes",
+      "label": "Désignation",
+      "total": "Total",
+      "totalWithCurrency": "Total ({currency})"
+    },
+    "searchPlaceholder": "Rechercher une charge...",
+    "descriptionPlaceholder": "Entrez une description...",
+    "referencePlaceholder": "Entrez une référence...",
+    "notesPlaceholder": "Ajoutez une note...",
+    "notDevis": "Pas de devise",
+    "devisHint": "Sélectionnez une devise",
+    "isDevis": "Devis",
+    "pdfDocument": "Document PDF",
+    "attachedReceipt": "Facture attachée",
+    "viewReceipt": "Voir la facture",
+    "upload": {
+      "dropHere": "Déposez le fichier ici",
+      "dropOrClick": "Glissez ou cliquez pour ajouter",
+      "orUrl": "Ou URL",
+      "pdfDetected": "PDF détecté",
+      "imageDetected": "Image détectée"
+    },
+    "ocr": {
+      "hint": "L'OCR va essayer d'extraire automatiquement les informations de la facture.",
+      "upload": "Téléverser un fichier",
+      "url": "Depuis une URL",
+      "running": "Analyse en cours...",
+      "extract": "Extraire avec l'OCR",
+      "success": "Extraction réussie !"
+    },
+    "imageViewerHint": "Cliquer sur l'image pour zoomer/dézoomer · Échap pour fermer"
   },
+
   "employees": {
     "title": "Employés",
     "new": "Nouvel employé",
@@ -435,4 +551,5 @@
     "unauthorized": "Accès non autorisé",
     "invalidAmount": "Montant invalide"
   }
+
 }

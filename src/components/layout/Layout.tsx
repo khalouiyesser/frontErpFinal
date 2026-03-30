@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import Sidebar from './Sidebar';
 
@@ -8,14 +8,49 @@ const SIDEBAR_COLLAPSED = 72;
 
 const isMobile = () => window.innerWidth < 768;
 
+// ── Map route → clé i18n ───────────────────────────────────────────────────
+const ROUTE_TITLES: Record<string, string> = {
+    '/dashboard':     'nav.dashboard',
+    '/clients':       'nav.clients',
+    '/suppliers':     'nav.suppliers',
+    '/products':      'nav.products',
+    '/sales':         'nav.sales',
+    '/purchases':     'nav.purchases',
+    '/stock':         'nav.stock',
+    '/quotes':        'nav.quotes',
+    '/charges':       'nav.charges',
+    '/employees':     'nav.employees',
+    '/accounting':    'nav.accounting',
+    '/reports':       'nav.reports',
+    '/settings':      'nav.settings',
+    '/notifications': 'nav.notifications',
+    '/admin/dashboard':     'nav.admin.dashboard',
+    '/admin/companies':     'nav.admin.companies',
+    '/admin/users':         'nav.admin.users',
+    '/admin/subscriptions': 'nav.admin.subscriptions',
+};
+
 const Layout: React.FC = () => {
-    const { i18n } = useTranslation();
-    const isRTL = i18n.language === 'ar';
+    const { i18n, t } = useTranslation();
+    const location     = useLocation();
+    const isRTL        = i18n.language === 'ar';
 
     const [sidebarWidth, setSidebarWidth] = useState(
         isMobile() ? 0 : SIDEBAR_EXPANDED
     );
 
+    // ── Titre dynamique ────────────────────────────────────────────────────
+    useEffect(() => {
+        const path = '/' + location.pathname.split('/').slice(1, 3).join('/');
+        // Cherche d'abord le chemin complet, puis juste le premier segment
+        const key = ROUTE_TITLES[path]
+            || ROUTE_TITLES['/' + location.pathname.split('/')[1]]
+            || 'nav.dashboard';
+        const pageTitle = t(key);
+        document.title = `${pageTitle} — KyPro ERP`;
+    }, [location.pathname, i18n.language, t]);
+
+    // ── Sidebar toggle ─────────────────────────────────────────────────────
     useEffect(() => {
         const handler = (e: Event) => {
             const { collapsed } = (e as CustomEvent).detail;
@@ -26,9 +61,7 @@ const Layout: React.FC = () => {
         window.addEventListener('sidebar-toggle', handler);
 
         const onResize = () => {
-            if (isMobile()) {
-                setSidebarWidth(0);
-            }
+            if (isMobile()) setSidebarWidth(0);
         };
         window.addEventListener('resize', onResize);
 
@@ -40,12 +73,9 @@ const Layout: React.FC = () => {
 
     // Recalcule le margin quand la langue change (RTL ↔ LTR)
     useEffect(() => {
-        if (!isMobile()) {
-            setSidebarWidth(SIDEBAR_EXPANDED);
-        }
+        if (!isMobile()) setSidebarWidth(SIDEBAR_EXPANDED);
     }, [i18n.language]);
 
-    // Margin réduit : on soustrait 56px (vs 48px avant) pour coller davantage
     const marginStyle = isMobile()
         ? {}
         : isRTL
@@ -62,13 +92,7 @@ const Layout: React.FC = () => {
                 className="flex-1 overflow-auto transition-all duration-300 w-full"
                 style={marginStyle}
             >
-                {/* Spacer pour le bouton hamburger sur mobile */}
                 <div className="h-16 md:hidden" />
-
-                {/*
-                  * px réduit : 2 sur mobile, 3 sur sm, 4 sur lg (était 1/2/3)
-                  * max-w élargi pour profiter de l'espace gagné
-                */}
                 <div className="px-2 py-2 sm:px-3 sm:py-3 lg:px-4 lg:py-4 max-w-screen-2xl mx-auto">
                     <div className="flex flex-col gap-4">
                         <Outlet />

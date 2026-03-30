@@ -76,7 +76,7 @@ export const stockApi = {
   getMovements:    (params?: any)                         => api.get('/stock', { params }).then(r => r.data),
   getAlerts:       ()                                     => api.get('/stock/alerts').then(r => r.data),
   adjust:          (data: any)                            => api.post('/stock/adjust', data).then(r => r.data),
-  updateThreshold: (productId: string, threshold: number) => api.patch(`/stock/threshold/${productId}`, { threshold }).then(r => r.data),
+  updateThreshold: (productId: string, threshold: number) => api.patch(`/stock/${productId}/threshold`, { threshold }).then(r => r.data),
 };
 
 /* ── Devis ───────────────────────────────────────────────────────────────────*/
@@ -85,6 +85,7 @@ export const quotesApi = {
   ...createCrudApi('quotes'),
   getInvoice:    (id: string) => api.get(`/quotes/${id}/export/pdf`, { responseType: 'blob' }).then(r => r.data),
   convertToSale: (id: string) => api.post(`/quotes/${id}/convert-to-sale`).then(r => r.data),
+  updateStatus : (id: string, status: string) => api.patch(`/quotes/${id}/status`, { status }).then(r => r.data),
 };
 
 /* ── Charges ─────────────────────────────────────────────────────────────────*/
