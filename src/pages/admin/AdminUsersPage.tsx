@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { usersApi } from '../../api';
+import { usersApi } from '@/api';
 import DataTable from '../../components/common/DataTable';
 import ConfirmDialog from '../../components/common/ConfirmDialog';
-import { useConfirmDialog } from '../../hooks/useConfirmDialog';
+import { useConfirmDialog } from '@/hooks/useConfirmDialog.ts';
 import { Plus, Pencil, Trash2, X, Shield, User } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
