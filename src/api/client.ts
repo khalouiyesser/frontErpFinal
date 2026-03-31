@@ -42,9 +42,9 @@ import toast from 'react-hot-toast';
 
 // ✅ Après
 // const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3001';
-const API_URL = 'http://192.168.1.176:3001';
+// const API_URL = 'http://192.168.1.176:3001';
 // const API_URL = 'http://localhost:3001';
-// const API_URL = 'https://kypro-backend.onrender.com';
+const API_URL = 'https://kypro-backend.onrender.com';
 
 
 const api = axios.create({
