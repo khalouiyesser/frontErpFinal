@@ -8,10 +8,12 @@ import {
     Plus, Pencil, Trash2, X, Search, Users, Wallet, FileText,
     TrendingUp, RefreshCw, ChevronLeft, ChevronRight,
     SlidersHorizontal, UserCheck, UserX, Building2, Phone,
-    Mail, CreditCard, CalendarDays,
+    Mail, CreditCard, CalendarDays, ChevronDown, ChevronUp,
+    Briefcase, Calendar, DollarSign
 } from 'lucide-react';
 import toast from 'react-hot-toast';
 import { format } from 'date-fns';
+import { ar, fr, enUS } from 'date-fns/locale';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 interface Employee {
@@ -77,30 +79,137 @@ const initials = (e: Employee) => `${e.firstName?.[0] || ''}${e.lastName?.[0] ||
 const avatarGradient = (e: Employee) =>
     AVATAR_COLORS[(e.firstName?.charCodeAt(0) || 0) % AVATAR_COLORS.length];
 
-// ── Sub-components ─────────────────────────────────────────────────────────────
+const getDateLocale = (lang: string) => {
+    if (lang === 'ar') return ar;
+    if (lang === 'fr') return fr;
+    return enUS;
+};
 
-// Skeleton row
-const SkeletonRow = () => (
-    <tr className="animate-pulse">
-        <td className="px-4 py-3.5">
-            <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-gray-200 dark:bg-gray-700 shrink-0" />
-                <div className="space-y-1.5">
-                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-lg w-28" />
-                    <div className="h-2.5 bg-gray-100 dark:bg-gray-800 rounded-lg w-20" />
+// ── Mobile Card Component ──────────────────────────────────────────────────────
+const EmployeeCard: React.FC<{
+    employee: Employee;
+    onEdit: (e: Employee) => void;
+    onDelete: (e: Employee) => void;
+    t: (k: string) => string;
+}> = ({ employee, onEdit, onDelete, t }) => {
+    const [expanded, setExpanded] = useState(false);
+
+    return (
+        <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 hover:shadow-md transition-all duration-200">
+            {/* Header */}
+            <div className="flex items-start justify-between">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className={`w-12 h-12 rounded-full bg-gradient-to-br ${avatarGradient(employee)} flex items-center justify-center flex-shrink-0 shadow-sm`}>
+                        <span className="text-white text-sm font-bold">{initials(employee)}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                            <h3 className="text-base font-bold text-gray-900 dark:text-white truncate">
+                                {employee.firstName} {employee.lastName}
+                            </h3>
+                            <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${CONTRACT_COLORS[employee.contractType] || CONTRACT_COLORS['Autre']}`}>
+                                <span className={`w-1.5 h-1.5 rounded-full ${CONTRACT_DOT[employee.contractType] || CONTRACT_DOT['Autre']}`} />
+                                {employee.contractType}
+                            </span>
+                        </div>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+                            {employee.position || employee.department || '—'}
+                        </p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-1">
+                    <button
+                        onClick={(e) => { e.stopPropagation(); onEdit(employee); }}
+                        className="p-2 rounded-lg text-blue-500 hover:text-blue-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors"
+                    >
+                        <Pencil size={16} />
+                    </button>
+                    <button
+                        onClick={(e) => { e.stopPropagation(); onDelete(employee); }}
+                        className="p-2 rounded-lg text-red-400 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 transition-colors"
+                    >
+                        <Trash2 size={16} />
+                    </button>
+                    <button
+                        onClick={() => setExpanded(!expanded)}
+                        className="p-2 rounded-lg text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                    >
+                        {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                    </button>
                 </div>
             </div>
-        </td>
-        {[120, 80, 90, 80, 60].map((w, i) => (
-            <td key={i} className="px-4 py-3.5">
-                <div className={`h-3 bg-gray-100 dark:bg-gray-800 rounded-lg w-${w < 100 ? w / 4 : 28}`} style={{ width: w }} />
-            </td>
-        ))}
-        <td className="px-4 py-3.5" />
-    </tr>
+
+            {/* Compact Info */}
+            <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
+                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                    <DollarSign size={14} className="text-emerald-500 shrink-0" />
+                    <span className="font-semibold text-gray-900 dark:text-white">{fmt(employee.salary)}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+                    <Calendar size={14} className="text-blue-500 shrink-0" />
+                    <span className="text-xs">
+                        {employee.hireDate ? format(new Date(employee.hireDate), 'dd/MM/yyyy') : '—'}
+                    </span>
+                </div>
+            </div>
+
+            {/* Expanded Details */}
+            {expanded && (
+                <div className="mt-3 pt-3 border-t border-gray-100 dark:border-gray-800 space-y-2">
+                    {employee.phone && (
+                        <div className="flex items-center gap-2 text-sm">
+                            <Phone size={14} className="text-gray-400 shrink-0" />
+                            <span className="text-gray-700 dark:text-gray-300">{employee.phone}</span>
+                        </div>
+                    )}
+                    {employee.email && (
+                        <div className="flex items-center gap-2 text-sm">
+                            <Mail size={14} className="text-gray-400 shrink-0" />
+                            <span className="text-gray-700 dark:text-gray-300 truncate">{employee.email}</span>
+                        </div>
+                    )}
+                    {employee.department && (
+                        <div className="flex items-center gap-2 text-sm">
+                            <Building2 size={14} className="text-gray-400 shrink-0" />
+                            <span className="text-gray-700 dark:text-gray-300">{employee.department}</span>
+                        </div>
+                    )}
+                    <div className="flex items-center justify-between pt-1">
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${employee.isActive
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800'
+                            : 'bg-gray-50 text-gray-500 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700'
+                        }`}>
+                            {employee.isActive ? <UserCheck size={11} /> : <UserX size={11} />}
+                            {employee.isActive ? t('common.active') : t('common.inactive')}
+                        </span>
+                    </div>
+                </div>
+            )}
+        </div>
+    );
+};
+
+// ── Skeleton Card ──────────────────────────────────────────────────────────────
+const SkeletonCard: React.FC = () => (
+    <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 animate-pulse">
+        <div className="flex items-start justify-between">
+            <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-full bg-gray-200 dark:bg-gray-700" />
+                <div className="space-y-2">
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded-lg w-32" />
+                    <div className="h-3 bg-gray-100 dark:bg-gray-800 rounded-lg w-24" />
+                </div>
+            </div>
+            <div className="w-8 h-8 bg-gray-100 dark:bg-gray-800 rounded-lg" />
+        </div>
+        <div className="grid grid-cols-2 gap-3 mt-3 pt-3 border-t border-gray-100 dark:border-gray-800">
+            <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded-lg w-20" />
+            <div className="h-4 bg-gray-100 dark:bg-gray-800 rounded-lg w-20" />
+        </div>
+    </div>
 );
 
-// Empty state
+// ── Empty State ────────────────────────────────────────────────────────────────
 const EmptyState: React.FC<{ hasFilters: boolean; onCreate: () => void; t: (k: string) => string }> = ({ hasFilters, onCreate, t }) => (
     <div className="flex flex-col items-center justify-center py-16 px-4 text-center">
         <div className="w-16 h-16 rounded-2xl bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
@@ -121,12 +230,12 @@ const EmptyState: React.FC<{ hasFilters: boolean; onCreate: () => void; t: (k: s
     </div>
 );
 
-// Pagination
+// ── Pagination ─────────────────────────────────────────────────────────────────
 const Pagination: React.FC<{
     page: number; totalPages: number; pageSize: number; total: number;
     onPage: (p: number) => void; onPageSize: (s: number) => void;
-    t: (k: string) => string;
-}> = ({ page, totalPages, pageSize, total, onPage, onPageSize, t }) => {
+    t: (k: string) => string; dir?: string;
+}> = ({ page, totalPages, pageSize, total, onPage, onPageSize, t, dir = 'ltr' }) => {
     if (total === 0) return null;
     const start = (page - 1) * pageSize + 1;
     const end   = Math.min(page * pageSize, total);
@@ -142,6 +251,9 @@ const Pagination: React.FC<{
         pages.push(totalPages);
     }
 
+    const ChevronLeftIcon = dir === 'rtl' ? ChevronRight : ChevronLeft;
+    const ChevronRightIcon = dir === 'rtl' ? ChevronLeft : ChevronRight;
+
     return (
         <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-4 border-t border-gray-100 dark:border-gray-800">
             <div className="flex items-center gap-3 text-sm text-gray-500 dark:text-gray-400">
@@ -154,7 +266,7 @@ const Pagination: React.FC<{
             <div className="flex items-center gap-1">
                 <button onClick={() => onPage(page - 1)} disabled={page === 1}
                         className="w-8 h-8 rounded-lg flex items-center justify-center border border-gray-200 dark:border-gray-700 text-gray-500 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:cursor-not-allowed">
-                    <ChevronLeft size={14} />
+                    <ChevronLeftIcon size={14} />
                 </button>
                 {pages.map((p, i) =>
                     p === '...' ? (
@@ -168,14 +280,14 @@ const Pagination: React.FC<{
                 )}
                 <button onClick={() => onPage(page + 1)} disabled={page === totalPages}
                         className="w-8 h-8 rounded-lg flex items-center justify-center border border-gray-200 dark:border-gray-700 text-gray-500 disabled:opacity-40 hover:bg-gray-50 dark:hover:bg-gray-800 transition-colors disabled:cursor-not-allowed">
-                    <ChevronRight size={14} />
+                    <ChevronRightIcon size={14} />
                 </button>
             </div>
         </div>
     );
 };
 
-// Form field wrapper
+// ── Form Field ─────────────────────────────────────────────────────────────────
 const FormField: React.FC<{ label: string; required?: boolean; children: React.ReactNode }> = ({ label, required: req, children }) => (
     <div className="flex flex-col gap-1.5">
         <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide">
@@ -192,6 +304,14 @@ const EmployeesPage: React.FC = () => {
     const { t: tRaw, i18n } = useTranslation();
     const t = (key: string, fallback?: string): string => String(tRaw(key, fallback ?? key));
     const dir = i18n.language === 'ar' ? 'rtl' : 'ltr';
+    const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+    const [isMobileView, setIsMobileView] = useState(isMobile);
+
+    React.useEffect(() => {
+        const handleResize = () => setIsMobileView(window.innerWidth < 768);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     // ── UI State ───────────────────────────────────────────────────────────────
     const [showForm,         setShowForm]         = useState(false);
@@ -360,12 +480,12 @@ const EmployeesPage: React.FC = () => {
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {[
                     { icon: Users,      label: t('employees.stats.active'),   value: stats.total,    sub: t('employees.count'),    color: 'blue'    },
-                    { icon: Wallet,     label: t('employees.stats.salary'),   value: `${(stats.salary / 1000).toFixed(1)}k`, sub: 'TND / ' + t('employees.stats.month'), color: 'amber'   },
+                    { icon: Wallet,     label: t('employees.stats.salary'),   value: `${(stats.salary / 1000).toFixed(1)}k`, sub: `TND / ${t('employees.stats.month')}`, color: 'amber'   },
                     { icon: FileText,   label: t('employees.stats.cdi'),      value: stats.cdi,      sub: t('employees.stats.contracts'), color: 'emerald' },
                     { icon: TrendingUp, label: t('employees.stats.depts'),    value: stats.depts || '—', sub: t('employees.stats.distinct'), color: 'violet'  },
                 ].map(({ icon: Icon, label, value, sub, color }) => (
                     <div key={label} className="relative bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 p-4 overflow-hidden hover:-translate-y-0.5 transition-transform duration-200">
-                        <div className={`absolute top-0 start-0 w-1 h-full rounded-s-2xl bg-${color}-500`} />
+                        <div className={`absolute top-0 ${dir === 'rtl' ? 'end-0' : 'start-0'} w-1 h-full rounded-s-2xl bg-${color}-500`} />
                         <div className={`inline-flex p-2 rounded-xl mb-3 bg-${color}-50 dark:bg-${color}-900/20`}>
                             <Icon size={16} className={`text-${color}-500`} />
                         </div>
@@ -412,17 +532,17 @@ const EmployeesPage: React.FC = () => {
             {/* ── Toolbar ── */}
             <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                 <div className="relative flex-1 min-w-0">
-                    <Search size={15} className="absolute start-3.5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                    <Search size={15} className={`absolute ${dir === 'rtl' ? 'end-3.5' : 'start-3.5'} top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none`} />
                     <input
                         type="text"
                         value={search}
                         onChange={e => setSearch(e.target.value)}
-                        placeholder={t('employees.searchPlaceholder')}
-                        className="w-full ps-10 pe-9 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/60 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-500 transition-all"
+                        placeholder={t('employees.placeholder.search')}
+                        className={`w-full ${dir === 'rtl' ? 'pe-10 ps-9' : 'ps-10 pe-9'} py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800/60 text-sm text-gray-900 dark:text-white placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500/25 focus:border-blue-500 transition-all`}
                     />
                     {search && (
                         <button onClick={() => setSearch('')}
-                                className="absolute end-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                                className={`absolute ${dir === 'rtl' ? 'start-3' : 'end-3'} top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors`}>
                             <X size={13} />
                         </button>
                     )}
@@ -432,24 +552,24 @@ const EmployeesPage: React.FC = () => {
             {/* ── Active filter tags ── */}
             {hasFilters && (
                 <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
-            <SlidersHorizontal size={12} /> {t('clients.filtersActive')}
-          </span>
+                    <span className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                        <SlidersHorizontal size={12} /> {t('clients.filtersActive')}
+                    </span>
                     {search && (
                         <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-medium">
-              "{search}" <button onClick={() => setSearch('')}><X size={11} /></button>
-            </span>
+                            "{search}" <button onClick={() => setSearch('')}><X size={11} /></button>
+                        </span>
                     )}
                     {filterContract !== 'all' && (
                         <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-medium">
-              {filterContract} <button onClick={() => setFilterContract('all')}><X size={11} /></button>
-            </span>
+                            {filterContract} <button onClick={() => setFilterContract('all')}><X size={11} /></button>
+                        </span>
                     )}
                     {filterStatus !== 'all' && (
                         <span className="inline-flex items-center gap-1 text-xs px-2.5 py-1 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-medium">
-              {filterStatus === 'active' ? t('employees.active') : t('employees.inactive')}
+                            {filterStatus === 'active' ? t('employees.active') : t('employees.inactive')}
                             <button onClick={() => setFilterStatus('all')}><X size={11} /></button>
-            </span>
+                        </span>
                     )}
                     <button onClick={() => { setSearch(''); setFilterContract('all'); setFilterStatus('all'); }}
                             className="text-xs text-red-500 hover:text-red-600 font-medium underline">
@@ -458,23 +578,41 @@ const EmployeesPage: React.FC = () => {
                 </div>
             )}
 
-            {/* ── Table ── */}
+            {/* ── Employee List (Table for Desktop, Cards for Mobile) ── */}
             <div className="bg-white dark:bg-gray-900 rounded-2xl border border-gray-100 dark:border-gray-800 overflow-hidden shadow-sm">
                 {isLoading ? (
-                    <table className="w-full">
-                        <thead>
-                        <tr className="border-b border-gray-100 dark:border-gray-800">
-                            {[t('employees.col.employee'), t('employees.col.contact'), t('employees.col.contract'), t('employees.col.salary'), t('employees.col.hired'), t('common.status'), ''].map(h => (
-                                <th key={h} className="px-4 py-3.5 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">{h}</th>
-                            ))}
-                        </tr>
-                        </thead>
-                        <tbody className="divide-y divide-gray-50 dark:divide-gray-800/60">
-                        {Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)}
-                        </tbody>
-                    </table>
+                    isMobileView ? (
+                        <div className="p-4 space-y-3">
+                            {Array.from({ length: 5 }).map((_, i) => <SkeletonCard key={i} />)}
+                        </div>
+                    ) : (
+                        <table className="w-full">
+                            <thead>
+                            <tr className="border-b border-gray-100 dark:border-gray-800">
+                                {[t('employees.col.employee'), t('employees.col.contact'), t('employees.col.contract'), t('employees.col.salary'), t('employees.col.hired'), t('common.status'), ''].map(h => (
+                                    <th key={h} className="px-4 py-3.5 text-left text-[11px] font-semibold uppercase tracking-wider text-gray-400 dark:text-gray-500">{h}</th>
+                                ))}
+                            </tr>
+                            </thead>
+                            <tbody className="divide-y divide-gray-50 dark:divide-gray-800/60">
+                            {Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} />)}
+                            </tbody>
+                        </table>
+                    )
                 ) : filtered.length === 0 ? (
                     <EmptyState hasFilters={hasFilters} onCreate={openCreate} t={t} />
+                ) : isMobileView ? (
+                    <div className="p-4 space-y-3">
+                        {paginated.map((emp) => (
+                            <EmployeeCard
+                                key={emp._id}
+                                employee={emp}
+                                onEdit={openEdit}
+                                onDelete={handleDelete}
+                                t={t}
+                            />
+                        ))}
+                    </div>
                 ) : (
                     <table className="w-full">
                         <thead>
@@ -522,37 +660,37 @@ const EmployeesPage: React.FC = () => {
 
                                 {/* Contract */}
                                 <td className="px-4 py-3.5">
-                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${CONTRACT_COLORS[emp.contractType] || CONTRACT_COLORS['Autre']}`}>
-                      <span className={`w-1.5 h-1.5 rounded-full ${CONTRACT_DOT[emp.contractType] || CONTRACT_DOT['Autre']}`} />
-                        {emp.contractType}
-                    </span>
+                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${CONTRACT_COLORS[emp.contractType] || CONTRACT_COLORS['Autre']}`}>
+                                            <span className={`w-1.5 h-1.5 rounded-full ${CONTRACT_DOT[emp.contractType] || CONTRACT_DOT['Autre']}`} />
+                                            {emp.contractType}
+                                        </span>
                                 </td>
 
                                 {/* Salary */}
                                 <td className="px-4 py-3.5">
-                    <span className="text-sm font-semibold tabular-nums text-gray-900 dark:text-white">
-                      {fmt(emp.salary)}
-                    </span>
+                                        <span className="text-sm font-semibold tabular-nums text-gray-900 dark:text-white">
+                                            {fmt(emp.salary)}
+                                        </span>
                                 </td>
 
                                 {/* Hire date */}
                                 <td className="px-4 py-3.5">
-                    <span className="text-xs text-gray-400 flex items-center gap-1">
-                      {emp.hireDate ? (
-                          <><CalendarDays size={11} /> {format(new Date(emp.hireDate), 'dd/MM/yyyy')}</>
-                      ) : '—'}
-                    </span>
+                                        <span className="text-xs text-gray-400 flex items-center gap-1">
+                                            {emp.hireDate ? (
+                                                <><CalendarDays size={11} /> {format(new Date(emp.hireDate), 'dd/MM/yyyy')}</>
+                                            ) : '—'}
+                                        </span>
                                 </td>
 
                                 {/* Status */}
                                 <td className="px-4 py-3.5">
-                    <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${emp.isActive
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800'
-                        : 'bg-gray-50 text-gray-500 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700'
-                    }`}>
-                      {emp.isActive ? <UserCheck size={11} /> : <UserX size={11} />}
-                        {emp.isActive ? t('common.active') : t('common.inactive')}
-                    </span>
+                                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium border ${emp.isActive
+                                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800'
+                                            : 'bg-gray-50 text-gray-500 border-gray-200 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700'
+                                        }`}>
+                                            {emp.isActive ? <UserCheck size={11} /> : <UserX size={11} />}
+                                            {emp.isActive ? t('common.active') : t('common.inactive')}
+                                        </span>
                                 </td>
 
                                 {/* Actions */}
@@ -583,13 +721,11 @@ const EmployeesPage: React.FC = () => {
             {!isLoading && filtered.length > 0 && (
                 <Pagination
                     page={page} totalPages={totalPages} pageSize={pageSize} total={filtered.length}
-                    onPage={setPage} onPageSize={setPageSize} t={t}
+                    onPage={setPage} onPageSize={setPageSize} t={t} dir={dir}
                 />
             )}
 
-            {/* ═══════════════════════════════════════
-          ── Form Modal ──
-      ═══════════════════════════════════════ */}
+            {/* Form Modal (same as original, but with dir support) */}
             {showForm && (
                 <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center" dir={dir}>
                     <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={closeForm} />
@@ -618,9 +754,8 @@ const EmployeesPage: React.FC = () => {
                             </button>
                         </div>
 
-                        {/* Body */}
+                        {/* Body - same as original but with RTL adjustments */}
                         <form onSubmit={handleSubmit} id="employee-form" className="flex-1 overflow-y-auto px-5 sm:px-6 py-5 space-y-5">
-
                             {/* Section Identité */}
                             <div>
                                 <p className="text-[11px] font-bold uppercase tracking-widest text-amber-500 mb-3">
@@ -637,22 +772,22 @@ const EmployeesPage: React.FC = () => {
                                     </FormField>
                                     <FormField label={t('employees.field.phone')}>
                                         <div className="relative">
-                                            <Phone size={14} className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                            <Phone size={14} className={`absolute ${dir === 'rtl' ? 'end-3' : 'start-3'} top-1/2 -translate-y-1/2 text-gray-400`} />
                                             <input value={form.phone} onChange={setField('phone')}
-                                                   placeholder="+216 XX XXX XXX" className={inp + ' ps-8'} />
+                                                   placeholder="+216 XX XXX XXX" className={`${inp} ${dir === 'rtl' ? 'pe-8' : 'ps-8'}`} />
                                         </div>
                                     </FormField>
                                     <FormField label={t('employees.field.email')}>
                                         <div className="relative">
-                                            <Mail size={14} className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                            <Mail size={14} className={`absolute ${dir === 'rtl' ? 'end-3' : 'start-3'} top-1/2 -translate-y-1/2 text-gray-400`} />
                                             <input type="email" value={form.email} onChange={setField('email')}
-                                                   placeholder={t('employees.placeholder.email')} className={inp + ' ps-8'} />
+                                                   placeholder={t('employees.placeholder.email')} className={`${inp} ${dir === 'rtl' ? 'pe-8' : 'ps-8'}`} />
                                         </div>
                                     </FormField>
                                     <FormField label={t('employees.field.cin')}>
                                         <div className="relative">
-                                            <CreditCard size={14} className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                                            <input value={form.cin} onChange={setField('cin')} placeholder="00000000" className={inp + ' ps-8'} />
+                                            <CreditCard size={14} className={`absolute ${dir === 'rtl' ? 'end-3' : 'start-3'} top-1/2 -translate-y-1/2 text-gray-400`} />
+                                            <input value={form.cin} onChange={setField('cin')} placeholder="00000000" className={`${inp} ${dir === 'rtl' ? 'pe-8' : 'ps-8'}`} />
                                         </div>
                                     </FormField>
                                     <FormField label={t('employees.field.cnss')}>
@@ -671,16 +806,16 @@ const EmployeesPage: React.FC = () => {
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                     <FormField label={t('employees.field.position')}>
                                         <div className="relative">
-                                            <Building2 size={14} className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                            <Building2 size={14} className={`absolute ${dir === 'rtl' ? 'end-3' : 'start-3'} top-1/2 -translate-y-1/2 text-gray-400`} />
                                             <input value={form.position} onChange={setField('position')}
-                                                   placeholder={t('employees.placeholder.position')} className={inp + ' ps-8'} />
+                                                   placeholder={t('employees.placeholder.position')} className={`${inp} ${dir === 'rtl' ? 'pe-8' : 'ps-8'}`} />
                                         </div>
                                     </FormField>
                                     <FormField label={t('employees.field.department')}>
                                         <div className="relative">
-                                            <Building2 size={14} className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                            <Building2 size={14} className={`absolute ${dir === 'rtl' ? 'end-3' : 'start-3'} top-1/2 -translate-y-1/2 text-gray-400`} />
                                             <input value={form.department} onChange={setField('department')}
-                                                   placeholder={t('employees.placeholder.department')} className={inp + ' ps-8'} />
+                                                   placeholder={t('employees.placeholder.department')} className={`${inp} ${dir === 'rtl' ? 'pe-8' : 'ps-8'}`} />
                                         </div>
                                     </FormField>
                                     <FormField label={t('employees.field.contractType')}>
@@ -690,15 +825,15 @@ const EmployeesPage: React.FC = () => {
                                     </FormField>
                                     <FormField label={t('employees.field.salary')}>
                                         <div className="relative">
-                                            <Wallet size={14} className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                                            <Wallet size={14} className={`absolute ${dir === 'rtl' ? 'end-3' : 'start-3'} top-1/2 -translate-y-1/2 text-gray-400`} />
                                             <input type="number" min={0} step={0.001} value={form.salary} onChange={setField('salary')}
-                                                   className={inp + ' ps-8'} />
+                                                   className={`${inp} ${dir === 'rtl' ? 'pe-8' : 'ps-8'}`} />
                                         </div>
                                     </FormField>
                                     <FormField label={t('employees.field.hireDate')}>
                                         <div className="relative">
-                                            <CalendarDays size={14} className="absolute start-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                                            <input type="date" value={form.hireDate} onChange={setField('hireDate')} className={inp + ' ps-8'} />
+                                            <CalendarDays size={14} className={`absolute ${dir === 'rtl' ? 'end-3' : 'start-3'} top-1/2 -translate-y-1/2 text-gray-400`} />
+                                            <input type="date" value={form.hireDate} onChange={setField('hireDate')} className={`${inp} ${dir === 'rtl' ? 'pe-8' : 'ps-8'}`} />
                                         </div>
                                     </FormField>
                                     <FormField label={t('employees.field.rib')}>
@@ -706,9 +841,9 @@ const EmployeesPage: React.FC = () => {
                                     </FormField>
                                     <div className="sm:col-span-2">
                                         <FormField label={t('common.notes')}>
-                      <textarea value={form.notes} onChange={setField('notes')} rows={2}
-                                placeholder={t('employees.placeholder.notes')}
-                                className={inp + ' resize-none'} />
+                                            <textarea value={form.notes} onChange={setField('notes')} rows={2}
+                                                      placeholder={t('employees.placeholder.notes')}
+                                                      className={`${inp} resize-none`} />
                                         </FormField>
                                     </div>
 
@@ -731,7 +866,7 @@ const EmployeesPage: React.FC = () => {
                                                 </div>
                                             </div>
                                             <div className={`w-11 h-6 rounded-full transition-all relative ${form.isActive ? 'bg-emerald-500' : 'bg-gray-300 dark:bg-gray-600'}`}>
-                                                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${form.isActive ? 'start-6' : 'start-1'}`} />
+                                                <div className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-all ${form.isActive ? (dir === 'rtl' ? 'end-6' : 'start-6') : (dir === 'rtl' ? 'end-1' : 'start-1')}`} />
                                             </div>
                                         </div>
                                     </div>
@@ -761,5 +896,26 @@ const EmployeesPage: React.FC = () => {
         </div>
     );
 };
+
+// Skeleton row component (keep for desktop)
+const SkeletonRow = () => (
+    <tr className="animate-pulse">
+        <td className="px-4 py-3.5">
+            <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-full bg-gray-200 dark:bg-gray-700 shrink-0" />
+                <div className="space-y-1.5">
+                    <div className="h-3 bg-gray-200 dark:bg-gray-700 rounded-lg w-28" />
+                    <div className="h-2.5 bg-gray-100 dark:bg-gray-800 rounded-lg w-20" />
+                </div>
+            </div>
+        </td>
+        {[120, 80, 90, 80, 60].map((w, i) => (
+            <td key={i} className="px-4 py-3.5">
+                <div className={`h-3 bg-gray-100 dark:bg-gray-800 rounded-lg w-${w < 100 ? w / 4 : 28}`} style={{ width: w }} />
+            </td>
+        ))}
+        <td className="px-4 py-3.5" />
+    </tr>
+);
 
 export default EmployeesPage;

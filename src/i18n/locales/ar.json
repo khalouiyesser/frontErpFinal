@@ -158,8 +158,14 @@
     "revenueTTC": "رقم الأعمال (بالضريبة)",
     "purchasesHT": "المشتريات (بدون ضريبة)",
     "purchasesTTC": "المشتريات (بالضريبة)",
+    "chargesBreakdown": "تفاصيل المصاريف",
+    "tvaNote": "يتم حساب ضريبة القيمة المضافة بناءً على النسب المطبقة على كل سطر بيع/شراء",
+    "collected": "المبالغ المحصلة",
+    "noDataMessage": "لا توجد بيانات محاسبية للفترة المحددة",
     "charges": "المصاريف",
     "grossProfit": "الربح الإجمالي",
+    "profitBreakdown": "تفاصيل حساب الربح",
+    "profitNote": "يتم حساب صافي الربح بعد خصم مصاريف التشغيل (بدون ضريبة)",
     "netProfit": "الربح الصافي",
     "tva": "الضريبة على القيمة المضافة",
     "tvaCollected": "ض.ق.م محصّلة (مبيعات)",
@@ -180,7 +186,10 @@
     "amountTTC": "المبلغ (بالض)",
     "tvaAmount": "الضريبة",
     "paymentStatus": "الحالة",
-    "invoiceType": { "sale": "بيع", "purchase": "شراء" },
+    "invoiceType": {
+      "sale": "بيع",
+      "purchase": "شراء"
+    },
     "exportPdf": "تصدير PDF",
     "exportExcel": "تصدير Excel",
     "filters": "الفلاتر",
@@ -379,8 +388,8 @@
     "title": "المصاريف",
     "new": "مصروف جديد",
     "amount": "المبلغ",
-    "category": "الفئة",
     "currency": "العملة",
+    "category": "الفئة",
     "searchPlaceholder": "ابحث عن مصروف...",
     "descriptionPlaceholder": "أدخل وصفًا...",
     "referencePlaceholder": "أدخل مرجعًا...",
@@ -460,33 +469,22 @@
     "department": "القسم",
     "totalSalary": "كتلة الرواتب",
     "employeeCount": "عدد الموظفين",
-    "title": "الموظفون",
     "count": "موظف",
     "activeCount": "نشط",
-    "new": "جديد",
     "create": "إنشاء",
     "created": "تم إنشاء الموظف",
     "updated": "تم تعديل الموظف",
     "deleted": "تم حذف الموظف",
-
     "empty": "لا يوجد موظفون",
     "emptyDesc": "ابدأ بإضافة أول موظف",
     "addFirst": "إضافة أول موظف",
-
-    "searchPlaceholder": "ابحث عن موظف...",
-
     "deleteTitle": "حذف الموظف",
     "deleteMsg": "هل أنت متأكد من حذف هذا الموظف؟",
-
-    "active": "نشط",
-    "inactive": "غير نشط",
     "activeHint": "الموظف نشط",
     "inactiveHint": "الموظف غير نشط",
-
     "newTitle": "موظف جديد",
     "editTitle": "تعديل الموظف",
     "autoAccountHint": "يمكن إنشاء حساب تلقائياً",
-
     "stats": {
       "active": "نشط",
       "salary": "الرواتب",
@@ -496,7 +494,6 @@
       "depts": "الأقسام",
       "distinct": "مختلفة"
     },
-
     "col": {
       "employee": "الموظف",
       "contact": "الاتصال",
@@ -504,12 +501,10 @@
       "salary": "الراتب",
       "hired": "تاريخ التوظيف"
     },
-
     "section": {
       "identity": "الهوية",
       "position": "الوظيفة"
     },
-
     "field": {
       "firstName": "الاسم",
       "lastName": "اللقب",
@@ -524,43 +519,16 @@
       "hireDate": "تاريخ التوظيف",
       "rib": "الحساب البنكي"
     },
-
     "placeholder": {
       "firstName": "أدخل الاسم",
       "lastName": "أدخل اللقب",
       "email": "أدخل البريد الإلكتروني",
       "position": "أدخل الوظيفة",
       "department": "أدخل القسم",
-      "notes": "أضف ملاحظة..."
-    }
-  },
-
-  "common": {
-    "active": "نشط",
-    "inactive": "غير نشط",
-    "edit": "تعديل",
-    "delete": "حذف",
-    "cancel": "إلغاء",
-    "saving": "جارٍ الحفظ...",
-    "refresh": "تحديث",
-    "status": "الحالة",
-    "notes": "ملاحظات",
-    "of": "من",
-    "all": "الكل",
-    "action_irreversible": "إجراء لا يمكن التراجع عنه",
-    "noResults": "لا توجد نتائج",
-    "noResultsDesc": "لا توجد عناصر مطابقة للبحث"
-  },
-
-  "clients": {
-    "perPage": "لكل صفحة",
-    "filtersActive": "فلاتر مفعّلة",
-    "clearAll": "مسح الكل"
-  },
-
-  "error": {
-    "generic": "حدث خطأ"
-  }
+      "notes": "أضف ملاحظة...",
+      "search": "بحث بالاسم أو الوظيفة أو القسم..."
+    },
+    "active": "نشط"
   },
   "admin": {
     "title": "الإدارة",
@@ -575,12 +543,14 @@
     "plan": "الخطة",
     "status": "الحالة",
     "trial": "تجريبي",
-    "active": "نشط",
     "expired": "منتهي",
     "suspended": "موقوف",
-
     "addCompany": "إضافة شركة",
-    "plans": { "basic": "أساسي", "professional": "احترافي", "enterprise": "مؤسسي" },
+    "plans": {
+      "basic": "أساسي",
+      "professional": "احترافي",
+      "enterprise": "مؤسسي"
+    },
     "payment": {
       "title": "إدارة المدفوعات",
       "markPaid": "تأشير كمدفوع",
@@ -607,15 +577,37 @@
     "changePassword": "تغيير كلمة المرور"
   },
   "notifications": {
+    "new": "جديد",
     "title": "الإشعارات",
-    "markAllRead": "تأشير الكل كمقروء",
+    "markAllRead": "تحديد الكل كمقروء",
+    "markAllShort": "تحديد الكل",
+    "markRead": "تحديد كمقروء",
+    "markedRead": "تم تحديد الإشعار كمقروء",
+    "allMarkedRead": "تم تحديد جميع الإشعارات كمقروءة",
     "noNotifications": "لا توجد إشعارات",
-    "new": "جديد"
+    "noNotificationsDesc": "ليس لديك إشعارات في الوقت الحالي",
+    "unread": "غير مقروء",
+    "unreadPlural": "غير مقروءة",
+    "read": "مقروء",
+    "readPlural": "مقروءة",
+    "allRead": "كل شيء محدّث",
+    "deleteConfirm": "سيتم حذف هذا الإشعار نهائياً.",
+    "deleted": "تم حذف الإشعار",
+    "autoRefresh": "يتم تحديث الإشعارات تلقائياً كل 30 ثانية"
   },
   "months": {
-    "1": "يناير", "2": "فبراير", "3": "مارس", "4": "أبريل",
-    "5": "ماي", "6": "يونيو", "7": "يوليو", "8": "أغسطس",
-    "9": "سبتمبر", "10": "أكتوبر", "11": "نوفمبر", "12": "ديسمبر"
+    "1": "يناير",
+    "2": "فبراير",
+    "3": "مارس",
+    "4": "أبريل",
+    "5": "ماي",
+    "6": "يونيو",
+    "7": "يوليو",
+    "8": "أغسطس",
+    "9": "سبتمبر",
+    "10": "أكتوبر",
+    "11": "نوفمبر",
+    "12": "ديسمبر"
   },
   "error": {
     "generic": "حدث خطأ ما",
