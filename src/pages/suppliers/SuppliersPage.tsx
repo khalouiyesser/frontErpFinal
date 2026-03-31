@@ -779,7 +779,7 @@ const SuppliersPage: React.FC = () => {
                                 data={paginated}
                                 columns={columns}
                                 searchKeys={[]}
-                                showSearch={false}
+                                // showSearch={false}
                                 isLoading={false}
                                 emptyMessage={t('common.noData')}
                                 onRowClick={row => navigate(`/suppliers/${row._id}`)}

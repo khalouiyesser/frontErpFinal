@@ -3,17 +3,15 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useTranslation } from 'react-i18next';
 import {
   Building2, Users, TrendingUp, Activity, Plus, Eye, Trash2,
-  CheckCircle, XCircle, Clock, PauseCircle, CreditCard, Calendar,
-  Search, Filter, Shield,
+  CheckCircle, XCircle, Clock, PauseCircle, Shield,
 } from 'lucide-react';
 import {
-  StatCard, Card, Button, Badge, DataTable, Modal, Input,
-  Select, ConfirmDialog, SearchInput, EmptyState,
-} from '../../components/ui';
-import { formatTND, formatDate, getStatusClass } from '../../utils';
+  StatCard, Card, Button, Badge, DataTable, ConfirmDialog, SearchInput
+} from '@/components/ui';
+import { formatTND, formatDate} from '@/utils';
 import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
-import { adminCompaniesApi } from '../../api/adminCompaniesApi';
+import { adminCompaniesApi } from '@/api/adminCompaniesApi.ts';
 
 const AdminDashboard: React.FC = () => {
   const { t } = useTranslation();
@@ -26,7 +24,7 @@ const AdminDashboard: React.FC = () => {
   const [searchCompany, setSearchCompany] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [planFilter, setPlanFilter]   = useState('');
-  const [paymentModal, setPaymentModal] = useState<any>(null);
+  // const [paymentModal, setPaymentModal] = useState<any>(null);
   const [suspendConfirm, setSuspendConfirm] = useState<any>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<any>(null);
 
